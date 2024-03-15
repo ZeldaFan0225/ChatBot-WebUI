@@ -13,16 +13,23 @@
     <body>
         <div class="main">
             <div class="sidebar-left">
-
+                <span class="sidebar-header">
+                    Model
+                </span>
+                <div id="models"></div>
             </div>
             <div class="chat-window">
-                <div class="input">
-                    <textarea id="textbox"></textarea>
-                    <button onclick="sendMessage()">Send</button>
+                <div class="textbox-area">
+                    <img onclick="resetChat()" src="/assets/delete.png">
+                    <div class="input">
+                        <textarea id="textbox" rows="1" placeholder="Send a message to start the chat" oninput="expandTextbox(this.value)"></textarea>
+                        <img onclick="sendMessage()" src="/assets/send.png">
+                    </div>
                 </div>
                 <div id="messages"></div>
             </div>
         </div>
     </body>
     <script src="/scripts/chat.js"></script>
+    <script src="/scripts/utils.js"></script>
 </html>

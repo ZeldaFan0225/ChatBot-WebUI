@@ -10,7 +10,7 @@ import { BaseConnector } from "./classes/BaseConnector";
 
 const RE_INI_KEY_VAL = /^\s*([\w.-]+)\s*=\s*(.*)?\s*$/;
 
-if (existsSync(`${process.cwd()}/.env`))
+if (existsSync(`${process.cwd()}/.env`)) {
 	for (const line of readFileSync(`${process.cwd()}/.env`, "utf8").split(
 		/[\r\n]|\r\n/
 	)) {
@@ -19,7 +19,7 @@ if (existsSync(`${process.cwd()}/.env`))
 
 		process.env[key] = value?.trim() || "true";
 	}
-
+}
 
 const config: Config = JSON.parse(readFileSync("./config.json").toString())
 const models: Record<string, BaseConnector> = {}
@@ -27,6 +27,8 @@ const models: Record<string, BaseConnector> = {}
 Object.entries(config.model_configurations).forEach(([name, data]) => {
     const connectorPath = config.connectors[data.connector]
     if(!connectorPath) throw new Error(`Connector ${data.connector} not found`)
+
+    if(!/^[a-zA-Z0-9_-]+$/.test(name)) throw new Error("Name has to follow the regex: /^[a-zA-Z0-9_-]+$/")
 
     const connectorClass = require(join(__dirname, connectorPath + ".js"))
     models[name] = new connectorClass.default(data.connectorOptions)
@@ -60,7 +62,18 @@ async function startWebServer() {
         return rep.sendFile("views/chat.html")
     })
 
-    app.post("/api/completion", async (req, rep) => {
+    app.get("/api/models", async (req, rep) => {
+        const data: Record<string, any> = {}
+        Object.entries(models).forEach(([name, model]) => {
+            data[name] = model.generationOptions
+        })
+
+        return rep.send(data)
+    })
+
+    app.post("/api/completion", {
+        bodyLimit: 1024 * 1024 * 10
+    }, async (req, rep) => {
         const body = req.body as ChatCompletionRequest
         if(!body.model) return rep.code(400).send({error: "No model specified"})
         if(!body.messages) return rep.code(400).send({error: "No messages specified"})

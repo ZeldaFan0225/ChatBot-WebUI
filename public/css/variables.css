@@ -1,10 +1,26 @@
 :root {
     --background: #222831;
     --lighter: #31363F;
+    --lightest: #4c525f;
     --main: #76ABAE;
     --text: #EEEEEE;
 
     --border-radius: 8px;
 
     --font: Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,Helvetica Neue,Arial,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+    border-radius: 2.5px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--lighter);
+    border-radius: 2.5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--main);
+    border-radius: 2.5px;
 }

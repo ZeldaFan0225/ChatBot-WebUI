@@ -1,14 +1,18 @@
 import { BaseChatMessage, BaseConnector, BaseConnectorInitOptions } from "../BaseConnector";
 
 export default class AnthropicConnector extends BaseConnector {
-    private apiKey: string;
-    private requestUrl: string;
-    private generationOptions: Partial<Omit<AnthropicPayload, "messages" | "model">>  & {model: string; system: string; max_tokens: number;};
+    #apiKey: string;
+    #requestUrl: string;
+    #generationOptions: Partial<Omit<AnthropicPayload, "messages" | "model">>  & {model: string; max_tokens: number;};
     constructor(options: AnthropicConnectorInitOptions) {
         super()
-        this.apiKey = options.apiKey;
-        this.requestUrl = options.url ;
-        this.generationOptions = options.generationOptions;
+        this.#apiKey = options.apiKey;
+        this.#requestUrl = options.url ;
+        this.#generationOptions = options.generationOptions;
+    }
+
+    get generationOptions(): Record<string, any> {
+        return this.#generationOptions;
     }
 
     async requestChatCompletion(messages: BaseChatMessage[]): Promise<string> {
@@ -17,8 +21,11 @@ export default class AnthropicConnector extends BaseConnector {
             .map(m => this.convertToAnthropicMessage(m))
             .filter(m => m !== null) as AnthropicChatMessage[];
 
+        const system = messages.find(m => m.role === "system")?.content || "";
+
         const response = await this.sendRequest({
-            ...this.generationOptions,
+            ...this.#generationOptions,
+            system,
             messages: openAiMessages
         })
 
@@ -30,12 +37,12 @@ export default class AnthropicConnector extends BaseConnector {
     }
 
     private async sendRequest(payload: AnthropicPayload): Promise<AnthropicResponse> {
-        const result = await fetch(this.requestUrl, {
+        const result = await fetch(this.#requestUrl, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "anthropic-version": "2023-06-01",
-                "x-api-key": `${process.env[this.apiKey]}`
+                "x-api-key": `${process.env[this.#apiKey]}`
             },
             body: JSON.stringify(payload)
         })
@@ -85,7 +92,7 @@ export default class AnthropicConnector extends BaseConnector {
 export interface AnthropicConnectorInitOptions extends BaseConnectorInitOptions {
     apiKey: string;
     url: string;
-    generationOptions: Partial<Omit<AnthropicPayload, "messages" | "model">>  & {model: string; system: string; max_tokens: number;}
+    generationOptions: Partial<Omit<AnthropicPayload, "messages" | "model">>  & {model: string; max_tokens: number;}
 }
 
 /* https://docs.anthropic.com/claude/docs/models-overview */

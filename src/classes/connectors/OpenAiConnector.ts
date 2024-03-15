@@ -1,14 +1,18 @@
 import { BaseChatMessage, BaseConnector, BaseConnectorInitOptions } from "../BaseConnector";
 
 export default class OpenAiCompatibleConnector extends BaseConnector {
-    private apiKey: string;
-    private requestUrl: string;
-    private generationOptions: Partial<Omit<OpenAiCompatiblePayload, "messages" | "model">>  & {model: string;};
+    #apiKey: string;
+    #requestUrl: string;
+    #generationOptions: Partial<Omit<OpenAiCompatiblePayload, "messages" | "model">>  & {model: string;};
     constructor(options: OpenAiCompatibleConnectorInitOptions) {
         super()
-        this.apiKey = options.apiKey;
-        this.requestUrl = options.url ;
-        this.generationOptions = options.generationOptions;
+        this.#apiKey = options.apiKey;
+        this.#requestUrl = options.url;
+        this.#generationOptions = options.generationOptions;
+    }
+
+    get generationOptions(): Record<string, any> {
+        return this.#generationOptions;
     }
 
     async requestChatCompletion(messages: BaseChatMessage[]): Promise<string> {
@@ -18,7 +22,7 @@ export default class OpenAiCompatibleConnector extends BaseConnector {
             .filter(m => m !== null) as OpenAiChatMessage[];
 
         const response = await this.sendRequest({
-            ...this.generationOptions,
+            ...this.#generationOptions,
             messages: openAiMessages
         })
 
@@ -30,11 +34,11 @@ export default class OpenAiCompatibleConnector extends BaseConnector {
     }
 
     private async sendRequest(payload: OpenAiCompatiblePayload): Promise<OpenAiCompatibleResponse> {
-        const result = await fetch(this.requestUrl, {
+        const result = await fetch(this.#requestUrl, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${process.env[this.apiKey]}`
+                "Authorization": `Bearer ${process.env[this.#apiKey]}`
             },
             body: JSON.stringify(payload)
         })

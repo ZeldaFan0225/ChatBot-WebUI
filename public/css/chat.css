@@ -15,45 +15,78 @@ html {
 }
 
 .sidebar-left {
-    width: 20vw;
+    width: 300px;
     background-color: var(--lighter);
+    padding: 15px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.sidebar-header {
+    font-size: 110%;
+    font-weight: bold;
+    border-bottom: 2px solid var(--main);
 }
 
 .chat-window {
-    width: 100%;
     height: 100%;
     box-sizing: border-box;
     padding: 20px;
     display: flex;
     gap: 15px;
     flex-direction: column-reverse;
+    flex: 1;
+}
+
+.textbox-area {
+    display: flex;
+    align-items: flex-end;
+}
+
+.textbox-area > img {
+    aspect-ratio: 1/1;
+    height: 31px;
+    filter: invert(1);
+    padding: 8px;
+    cursor: pointer;
 }
 
 .input {
     width: 100%;
     display: flex;
+    align-items: flex-end;
+    border-radius: var(--border-radius);
+    border: 3px solid var(--main);
 }
 
 .input textarea {
     width: 100%;
-    height: 100%;
     background-color: transparent;
-    border: 3px solid var(--main);
-    border-radius: var(--border-radius);
     resize: none;
-    padding: 5px;
+    padding: 10px;
     box-sizing: border-box;
     color: var(--text);
     flex: 1;
     font-family: var(--font);
+    font-size: 1rem;
+    border: none;
 }
 
 .input textarea:focus {
     outline: none;
 }
 
-.input button {
+.input img {
     aspect-ratio: 1/1;
+    padding: 0;
+    background-color: transparent;
+    border: none;
+    stroke: var(--main);
+    height: 31px;
+    filter: invert(1);
+    padding: 5px;
 }
 
 #messages {
@@ -63,12 +96,48 @@ html {
     gap: 15px;
     overflow-y: auto;
     height: max-content;
+    padding-right: 10px;
 }
 
 .message {
     width: 100%;
     display: flex;
     gap: 1rem;
+    max-width: 1200px;
+    width: 100%;
+}
+
+.message.loading .message-body > div {
+    display: flex;
+    gap: 5px;
+    padding: 5px 0px;
+}
+
+.message.loading .message-body > div > div {
+    aspect-ratio: 1/1;
+    width: 1rem;
+    border-radius: 50%;
+    background-color: var(--main);
+    animation: loading 0.9s infinite;
+}
+
+.message.loading .message-body > div > div:nth-child(1) {animation-delay: 0ms;}
+.message.loading .message-body > div > div:nth-child(2) {animation-delay: 100ms;}
+.message.loading .message-body > div > div:nth-child(3) {animation-delay: 200ms;}
+
+@keyframes loading {
+    0% {
+        opacity: 0.5;
+        transform: scale(0.9);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
 }
 
 .message > .pfp > img {
@@ -81,4 +150,50 @@ html {
 .message > .message-body > .username {
     font-size: 102%;
     font-weight: bold;
+}
+
+pre {
+    padding: 5px;
+    background-color: #2b2d31;
+    border-radius: 5px;
+}
+
+#models {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    overflow-y: auto;
+}
+
+.model {
+    border-radius: calc(1.5 * var(--border-radius));
+    padding: 8px;
+    border: 3px solid var(--lightest);
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.model.selected {
+    border: 3px solid var(--main);
+}
+
+.model > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.model > div > span {
+    font-size: 105%;
+    font-weight: bold;
+}
+
+.model > div > img {
+    filter: invert(1);
+}
+
+.model > span:nth-child(2) {
+    opacity: 80%;
 }
