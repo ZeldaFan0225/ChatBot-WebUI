@@ -51,7 +51,6 @@ html {
     bottom: 80px;
     position: absolute;
     display: flex;
-    gap: 5px;
     flex-direction: column;
     background-color: var(--lighter);
     border-radius: var(--border-radius);
@@ -62,16 +61,16 @@ html {
 }
 
 #actions.expanded {
-    height: 100px;
-    padding: 10px;
+    height: 88px;
 }
 
 .action {
     display: flex;
     align-items: center;
     gap: 10px;
-    justify-content: space-between;
     cursor: pointer;
+    padding: 10px;
+    height: 24px;
 }
 
 .action .material-icons {

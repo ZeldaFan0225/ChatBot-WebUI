@@ -4,6 +4,7 @@ import rate_limit from "@fastify/rate-limit"
 import cors from "@fastify/cors"
 import fastify_static from "@fastify/static"
 import cookie from "@fastify/cookie"
+import { randomBytes } from "crypto";
 import { join } from "path";
 import { ChatCompletionRequest, Config } from "./types";
 import { BaseConnector } from "./classes/BaseConnector";
@@ -57,10 +58,25 @@ async function startWebServer() {
     await app.register(fastify_static, {
         root: join(__dirname, '../public')
     });
+
+    const authenticated = new Set()
     
     await app.register(cookie)
 
-    app.get("/chat", async (_, rep) => {
+    app.get("/login", async (req, rep) => {
+        if(!req.headers.authorization) return rep.code(401).header("www-authenticate", "Basic").send({error: "Unauthorized"})
+        const [username, password] = Buffer.from((req.headers.authorization || "").replace("Basic ", ""), "base64").toString("utf8").split(":")
+        if(
+            username !== process.env["LOGIN_USERNAME"] ||
+            password !== process.env["LOGIN_PASSWORD"]
+        ) return rep.code(401).header("www-authenticate", "Basic").send({error: "Unauthorized"})
+        const token = randomBytes(32).toString("hex")
+        authenticated.add(token)
+        return rep.cookie("S_TOKEN", token).redirect("/")
+    })
+
+    app.get("/", async (req, rep) => {
+        if(!req.cookies["S_TOKEN"] || !authenticated.has(req.cookies["S_TOKEN"])) return rep.redirect("/login")
         return rep.sendFile("views/chat.html")
     })
 

@@ -35,3 +35,10 @@ function expandActions(element) {
     element.classList.toggle("expanded")
     document.getElementById("actions").classList.toggle("expanded")
 }
+
+function resetSaved() {
+    if(!confirm("Do you want to reset the custom change you made?")) return;
+    localStorage.clear()
+    alert("Reset the changes")
+    location.reload()
+}
