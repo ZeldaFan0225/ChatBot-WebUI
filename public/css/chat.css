@@ -54,18 +54,16 @@ html {
     gap: 5px;
     flex-direction: column;
     background-color: var(--lighter);
-    padding: 10px;
     border-radius: var(--border-radius);
     width: fit-content;
-    transition: all 0.3s ease-in-out;
+    transition: height 0.3s ease-in-out;
     overflow: hidden;
     height: 0px;
-    margin: -10px;
 }
 
 #actions.expanded {
     height: 100px;
-    margin: 0;
+    padding: 10px;
 }
 
 .action {

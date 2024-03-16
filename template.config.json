@@ -1,0 +1,31 @@
+{
+    "modelConfigurations": {
+        "ChatGPT": {
+            "connector": "OpenAiCompatibleConnector",
+            "systemInstruction": "You are a useful chatbot.",
+            "connectorOptions": {
+                "url": "https://api.openai.com/v1/chat/completions",
+                "apiKey": "OPENAI_KEY",
+                "generationOptions": {
+                    "model": "gpt-3.5-turbo"
+                }
+            }
+        },
+        "Claude": {
+            "connector": "AnthropicConnector",
+            "systemInstruction": "You are a useful chatbot.",
+            "connectorOptions": {
+                "url": "https://api.anthropic.com/v1/messages",
+                "apiKey": "ANTHROPIC_KEY",
+                "generationOptions": {
+                    "model": "claude-3-haiku-20240307",
+                    "max_tokens": 4000
+                }
+            }
+        }
+    },
+    "connectors": {
+        "OpenAiCompatibleConnector": "classes/connectors/OpenAiConnector",
+        "AnthropicConnector": "classes/connectors/AnthropicConnector"
+    }
+}
