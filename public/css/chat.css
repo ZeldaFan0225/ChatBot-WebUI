@@ -38,19 +38,46 @@ html {
     gap: 15px;
     flex-direction: column-reverse;
     flex: 1;
+    position: relative;
 }
 
 .textbox-area {
     display: flex;
     align-items: flex-end;
+    gap: 5px;
 }
 
-.textbox-area > img {
-    aspect-ratio: 1/1;
-    height: 31px;
-    filter: invert(1);
-    padding: 8px;
+#actions {
+    bottom: 80px;
+    position: absolute;
+    display: flex;
+    gap: 5px;
+    flex-direction: column;
+    background-color: var(--lighter);
+    padding: 10px;
+    border-radius: var(--border-radius);
+    width: fit-content;
+    transition: all 0.3s ease-in-out;
+    overflow: hidden;
+    height: 0px;
+    margin: -10px;
+}
+
+#actions.expanded {
+    height: 100px;
+    margin: 0;
+}
+
+.action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
     cursor: pointer;
+}
+
+.action .material-icons {
+    color: var(--main);	
 }
 
 .input {
@@ -196,4 +223,91 @@ pre {
 
 .model > span:nth-child(2) {
     opacity: 80%;
+}
+
+
+#model-modal {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--background-opaque);
+    z-index: 9999;
+}
+
+#model-modal > div {
+    width: 80%;
+    max-width: 600px;
+    background-color: var(--background);
+    border: 3px solid var(--lighter);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header img {
+    aspect-ratio: 1/1;
+    height: 30px;
+    filter: invert(1);
+    cursor: pointer;
+}
+
+#model-parameters code,
+#model-parameters code:focus {
+    outline: none;
+}
+
+input[type="text"] {
+    padding: 8px;
+    border-radius: var(--border-radius);
+    border: none;
+    background-color: var(--lighter);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 1rem;
+}
+
+input[type="text"]:focus {
+    outline: none;
+}
+
+button {
+    padding: 8px;
+    border-radius: var(--border-radius);
+    border: none;
+    background-color: var(--main);
+    color: var(--background);
+    font-family: var(--font);
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+button.delete {
+    background-color: var(--danger);
+    color: white;
+}
+
+.expand-actions {
+    cursor: pointer;
+    padding: 8px;
+    font-size: 31px;
+    background-color: var(--main);
+    color: white;
+    border-radius: 50%;
+    aspect-ratio: 1/1;
+    transition: transform 0.3s ease-in-out;
+}
+
+.expand-actions.expanded {
+    transform: rotateZ(-180deg);
 }

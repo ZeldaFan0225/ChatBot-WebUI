@@ -1,5 +1,5 @@
 export abstract class BaseConnector {
-    abstract requestChatCompletion(messages: BaseChatMessage[]): Promise<string>;
+    abstract requestChatCompletion(messages: BaseChatMessage[], overrideOptions?: Record<string, any>): Promise<string>;
     abstract get generationOptions(): Record<string, any>;
 }
 

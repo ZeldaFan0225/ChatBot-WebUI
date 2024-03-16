@@ -15,7 +15,7 @@ export default class OpenAiCompatibleConnector extends BaseConnector {
         return this.#generationOptions;
     }
 
-    async requestChatCompletion(messages: BaseChatMessage[]): Promise<string> {
+    async requestChatCompletion(messages: BaseChatMessage[], overrideOptions?: Record<string, any>): Promise<string> {
         // convert message format to openai format
         const openAiMessages = messages
             .map(m => this.convertToOpenAiMessage(m))
@@ -23,6 +23,7 @@ export default class OpenAiCompatibleConnector extends BaseConnector {
 
         const response = await this.sendRequest({
             ...this.#generationOptions,
+            ...overrideOptions,
             messages: openAiMessages
         })
 
@@ -43,9 +44,11 @@ export default class OpenAiCompatibleConnector extends BaseConnector {
             body: JSON.stringify(payload)
         })
 
-        const response = await result.json() as OpenAiCompatibleResponse;
+        const response = await result.json();
 
-        return response;
+        if(response.error) throw new Error(response.error.message || response.error);
+
+        return response as OpenAiCompatibleResponse;
     }
 
     private convertToOpenAiMessage(message: BaseChatMessage): OpenAiChatMessage | null {

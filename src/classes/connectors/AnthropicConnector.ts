@@ -15,7 +15,7 @@ export default class AnthropicConnector extends BaseConnector {
         return this.#generationOptions;
     }
 
-    async requestChatCompletion(messages: BaseChatMessage[]): Promise<string> {
+    async requestChatCompletion(messages: BaseChatMessage[], overrideOptions?: Record<string, any>): Promise<string> {
         // convert message format to openai format
         const openAiMessages = messages
             .map(m => this.convertToAnthropicMessage(m))
@@ -25,6 +25,7 @@ export default class AnthropicConnector extends BaseConnector {
 
         const response = await this.sendRequest({
             ...this.#generationOptions,
+            ...overrideOptions,
             system,
             messages: openAiMessages
         })
@@ -47,9 +48,11 @@ export default class AnthropicConnector extends BaseConnector {
             body: JSON.stringify(payload)
         })
 
-        const response = await result.json() as AnthropicResponse;
+        const response = await result.json();
 
-        return response;
+        if(response.type === "error" || response.error) throw new Error(`${response.error.type} | ${response.error.message}`)
+
+        return response as AnthropicResponse;
     }
 
     private convertToAnthropicMessage(message: BaseChatMessage): AnthropicChatMessage | null {

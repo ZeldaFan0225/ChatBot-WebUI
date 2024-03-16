@@ -23,8 +23,9 @@ if (existsSync(`${process.cwd()}/.env`)) {
 
 const config: Config = JSON.parse(readFileSync("./config.json").toString())
 const models: Record<string, BaseConnector> = {}
+const systemInstructions: Record<string, string> = {}
 
-Object.entries(config.model_configurations).forEach(([name, data]) => {
+Object.entries(config.modelConfigurations).forEach(([name, data]) => {
     const connectorPath = config.connectors[data.connector]
     if(!connectorPath) throw new Error(`Connector ${data.connector} not found`)
 
@@ -32,6 +33,7 @@ Object.entries(config.model_configurations).forEach(([name, data]) => {
 
     const connectorClass = require(join(__dirname, connectorPath + ".js"))
     models[name] = new connectorClass.default(data.connectorOptions)
+    systemInstructions[name] = data.systemInstruction
 })
 
 console.log(`Loaded models: ${Object.keys(models).join(", ")}`)
@@ -62,10 +64,13 @@ async function startWebServer() {
         return rep.sendFile("views/chat.html")
     })
 
-    app.get("/api/models", async (req, rep) => {
+    app.get("/api/models", async (_, rep) => {
         const data: Record<string, any> = {}
         Object.entries(models).forEach(([name, model]) => {
-            data[name] = model.generationOptions
+            data[name] = {
+                generationOptions: model.generationOptions,
+                systemInstruction: systemInstructions[name]
+            }
         })
 
         return rep.send(data)
@@ -78,8 +83,7 @@ async function startWebServer() {
         if(!body.model) return rep.code(400).send({error: "No model specified"})
         if(!body.messages) return rep.code(400).send({error: "No messages specified"})
         if(!models[body.model]) return rep.code(400).send({error: "Model not found"})
-        const result = await models[body.model]?.requestChatCompletion(body.messages).catch(console.error)
-        if(!result) return rep.code(500).send({error: "Internal Server Error"})
+        const result = await models[body.model]?.requestChatCompletion(body.messages, body.overrideOptions || {})
 
         return rep.send({result})
     })

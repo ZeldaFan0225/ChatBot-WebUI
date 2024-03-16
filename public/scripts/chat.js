@@ -1,25 +1,33 @@
-let model;
-let models = []
-let messages = []
-let systemInstruct = "You are a texan chatbot. You end every one of your sentences with 'yehaw' no matter what. You also have a tendency to say 'howdy' at the beginning of your sentences"
+loadMessages()
+loadSelectedModel()
+loadOverrideModelOptions()
+loadOverrideSystemInstructions()
+
+messages.forEach(m => {
+    if(m.role === "user") displayChatMessage("user", m.content)
+    if(m.role === "assistant") displayChatMessage("bot", m.content)
+})
 
 fetch(`/api/models`)
 .then(async res => {
     const data = await res.json()
-    models = data
 
-    const list = Object.entries(models).map(([name, data], i) =>
-        `<div class="model ${!i ? "selected" : ""}" onclick="selectModel(this, event)" model="${name}">
+    const list = Object.entries(data).map(([name, data], i) => {
+        systemInstructions[name] = data.systemInstruction || ""
+        modelOptions[name] = data.generationOptions
+
+        return `<div class="model ${!i ? "selected" : ""}" onclick="selectModel(this, event)" model="${name}">
             <div>
                 <span>${name}</span>
-                <img src="/assets/more.png">
+                <img src="/assets/images/more.png" onclick="displayModelDetails(this)">
             </div>
-            <span>${Object.keys(data).length} Parameters</span>
+            <span>${Object.keys({...data.generationOptions, ...overrideModelOptions[name]}).length} Parameters</span>
         </div>`
-    )
+    })
 
     document.getElementById("models").innerHTML = list.join("")
-    selectModel(document.getElementById("models").firstElementChild)
+    selectedModel ??= Object.keys(data)[0]
+    selectModel(document.querySelector(`.model[model="${selectedModel}"]`))
 })
 
 
@@ -36,26 +44,32 @@ async function sendMessage() {
     })
     displayLoadigMessage()
     const response = await requestChatCompletion()
+    if(response.error) {
+        displayChatMessage("bot", response.message || response.error, true)
+        return;
+    }
     displayChatMessage("bot", response.result)
     messages.push({
         role: "assistant",
         content: response.result
     })
+    saveMessages()
 }
 
 async function requestChatCompletion() {
-    if(!model) return;
+    if(!selectedModel) return;
     return await fetch(`/api/completion`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model,
+            model: selectedModel,
+            overrideOptions: overrideModelOptions[selectedModel] || {},
             messages: [
                 {
                     role: "system",
-                    content: systemInstruct
+                    content: overrideSystemInstructions[selectedModel] || systemInstructions[selectedModel]
                 },
                 ...messages
             ]
@@ -63,18 +77,18 @@ async function requestChatCompletion() {
     }).then(res => res.json())
 }
 
-function displayChatMessage(role, content) {
+function displayChatMessage(role, content, error) {
     document.querySelector(".message.loading")?.remove()
     if(role !== "user" && role !== "bot") return ""
     const message = `<div class="message">
         <div class="pfp">
-            <img src="/assets/${role === "bot" ? "bot_pfp" : "user_pfp"}.jpg">
+            <img src="/assets/images/${role === "bot" ? "bot_pfp" : "user_pfp"}.jpg">
         </div>
         <div class="message-body">
             <span class="username">
                 ${role === "bot" ? "ChatBot" : "You"}
             </span>
-            <div>
+            <div${error ? " style=\"color: var(--red);\"" : ""}>
                 ${htmlEntities(content)}
             </div>
         </div>
@@ -86,7 +100,7 @@ function displayChatMessage(role, content) {
 function displayLoadigMessage() {
     const message = `<div class="message loading">
         <div class="pfp">
-            <img src="/assets/bot_pfp.jpg">
+            <img src="/assets/images/bot_pfp.jpg">
         </div>
         <div class="message-body">
             <span class="username">
@@ -108,9 +122,51 @@ function selectModel(element, event) {
     if(path?.some(e => e.nodeName === "IMG")) return;
     document.querySelectorAll(".model.selected").forEach(e => e.classList.remove("selected"))
     element.classList.add("selected")
-    model = element.getAttribute("model")
+    setSelectedModel(element.getAttribute("model"))
 }
 
-function displayModelDetails() {
+let loadedModalModel;
+function displayModelDetails(element) {
+    document.getElementById("model-modal").style.display = ""
+    const model = element.parentElement.parentElement.getAttribute("model")
+    const modeldata = overrideModelOptions[model] || modelOptions[model]
 
+    loadedModalModel = model;
+
+    document.getElementById("model-name").innerText = model
+    document.getElementById("model-parameters").firstElementChild.innerText = JSON.stringify(modeldata, null, 2)
+    document.getElementById("model-systeminstruct").value = overrideSystemInstructions[model] || systemInstructions[model]
+}
+
+function hideModal() {
+    try {
+        overrideModelOptions[loadedModalModel] = JSON.parse(document.getElementById("model-parameters").innerText)
+    } catch {
+        return alert("Invalid JSON")
+    }
+    const modelSystemInstruct = document.getElementById("model-systeminstruct").value
+    if(!modelSystemInstruct) return alert("System Instruction cannot be empty")
+    if(modelSystemInstruct !== systemInstructions[loadedModalModel]) {
+        overrideSystemInstructions[loadedModalModel] = modelSystemInstruct
+    }
+    
+    saveOverrideModelOptions()
+    saveOverrideSystemInstructions()
+
+    document.querySelector(`.model[model="${loadedModalModel}"]`).lastElementChild.innerText = `${Object.keys({...modelOptions[loadedModalModel], ...overrideModelOptions[loadedModalModel]}).length} Parameters`
+    loadedModalModel = undefined;
+
+    document.getElementById("model-modal").style.display = "none"
+}
+
+function resetModalModelOverrides() {
+    delete overrideModelOptions[loadedModalModel]
+    delete overrideSystemInstructions[loadedModalModel]
+
+    saveOverrideModelOptions()
+    saveOverrideSystemInstructions()
+    
+    const modeldata = modelOptions[loadedModalModel]
+    document.getElementById("model-parameters").firstElementChild.innerText = JSON.stringify(modeldata, null, 2)
+    document.getElementById("model-systeminstruct").value = systemInstructions[loadedModalModel]
 }

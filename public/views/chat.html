@@ -12,6 +12,20 @@
     </head>
     <body>
         <div class="main">
+            <div id="model-modal" style="display:none;">
+                <div>
+                    <div class="modal-header">
+                        <h1 id="model-name">
+                            ChatGPT
+                        </h1>
+                        <img onclick="hideModal()" src="/assets/images/x.png">
+                    </div>
+                    <pre id="model-parameters"><code contenteditable="true" spellcheck="false"></code></pre>
+                    <input type="text" id="model-systeminstruct">
+                    <button onclick="hideModal()">Save</button>
+                    <button onclick="resetModalModelOverrides()" class="delete">Reset to default</button>
+                </div>
+            </div>
             <div class="sidebar-left">
                 <span class="sidebar-header">
                     Model
@@ -20,16 +34,23 @@
             </div>
             <div class="chat-window">
                 <div class="textbox-area">
-                    <img onclick="resetChat()" src="/assets/delete.png">
+                    <i class="material-icons expand-actions" onclick="expandActions(this)">expand_more</i>
                     <div class="input">
-                        <textarea id="textbox" rows="1" placeholder="Send a message to start the chat" oninput="expandTextbox(this.value)"></textarea>
-                        <img onclick="sendMessage()" src="/assets/send.png">
+                        <textarea id="textbox" rows="1" placeholder="Send a message to start the chat" onkeyup="textboxInput(event)" oninput="expandTextbox()"></textarea>
+                        <img onclick="sendMessage()" src="/assets/images/send.png">
+                    </div>
+                </div>
+                <div id="actions">
+                    <div class="action" onclick="resetChat()">
+                        <i class="material-icons">delete</i>
+                        <span>Delete Chat</span>
                     </div>
                 </div>
                 <div id="messages"></div>
             </div>
         </div>
     </body>
-    <script src="/scripts/chat.js"></script>
+    <script src="/scripts/storage.js"></script>
     <script src="/scripts/utils.js"></script>
+    <script src="/scripts/chat.js"></script>
 </html>

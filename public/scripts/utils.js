@@ -10,6 +10,12 @@ function expandTextbox() {
     textbox.style.height = Math.min(textbox.scrollHeight, 200) + "px";
 }
 
+function textboxInput(event) {
+    if(event.key === "Enter" && !event.shiftKey) {
+        sendMessage()
+    }
+}
+
 function resetChat() {
     if(!confirm("Do you want to reset the chat?")) return;
     messages = []
@@ -23,4 +29,9 @@ function markdownToHtml(markdown) {
 
     const inlineCodeRegex = /`([^`]*)`/g;
     return text.replace(inlineCodeRegex, (match, code) => `<code>${code}</code>`);
+}
+
+function expandActions(element) {
+    element.classList.toggle("expanded")
+    document.getElementById("actions").classList.toggle("expanded")
 }
