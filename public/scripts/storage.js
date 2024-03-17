@@ -31,7 +31,7 @@ function loadSelectedModel() {
 }
 
 function saveMessages() {
-    localStorage.setItem('messages', JSON.stringify(messages));
+    localStorage.setItem('messages', JSON.stringify(messages.map(m => ({...m, attachments: undefined, hasAttachment: m.attachments?.length > 0}))));
 }
 
 function loadMessages() {

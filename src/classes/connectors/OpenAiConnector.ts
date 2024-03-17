@@ -60,10 +60,12 @@ export default class OpenAiCompatibleConnector extends BaseConnector {
             name: message.name
         }
         if(message.role === "user") {
-            if(message.attachmentsUrls) {
-                const imageUrls = message.attachmentsUrls.map(url => ({
+            if(message.attachments) {
+                const imageUrls = message.attachments.map(url => ({
                     type: "image" as const,
-                    url
+                    image_url: {
+                        url
+                    }
                 }))
 
                 openAiMessage.content = [...imageUrls, {type: "text", text: message.content}]
@@ -123,7 +125,7 @@ export interface OpenAiUserMessage extends OpenAiBaseMessage {
     content: string | ({
         type: "text", text: string
     } | {
-        type: "image", url: string
+        type: "image", image_url: {url: string, detail?: "auto" | "low" | "high"}
     })[]
 }
 

@@ -1,4 +1,5 @@
 import { BaseChatMessage, BaseConnector, BaseConnectorInitOptions } from "../BaseConnector";
+import { Utils } from "../Utils";
 
 export default class AnthropicConnector extends BaseConnector {
     #apiKey: string;
@@ -63,31 +64,23 @@ export default class AnthropicConnector extends BaseConnector {
             role: message.role,
         }
         // support for images at a later point in time
-        /*if(message.attachmentsUrls) {
-            const imageUrls = message.attachmentsUrls.map(url => {
-                // request image from url and convert to base64
-                fetch(url)
-                    .then(res => res.blob())
-                    .then(blob => {
-                        const reader = new FileReader();
-                        reader.readAsDataURL(blob);
-                        reader.onloadend = function() {
-                            const base64data = reader.result;
-                            return {
-                                type: "image" as const,
-                                source: {
-                                    type: "base64" as const,
-                                    // determine media type from request
-                                    media_type: "image/png",
-                                    data: base64data
-                                }
-                            }
-                        }
-                    })
+        if(message.attachments) {
+            const imageUrls = message.attachments
+            .filter(url => Utils.validateBase64Data(url))
+            .map(url => {
+                const [type, data] = url.split(";");
+                return {
+                    type: "image" as const,
+                    source: {
+                        type: "base64" as const,
+                        media_type: type?.replace("data:", "")!,
+                        data: data?.replace("base64,", "")!
+                    }
+                }
             })
 
             openAiMessage.content = [...imageUrls, {type: "text", text: message.content}]
-        }*/
+        }
         return openAiMessage;
     }
 }

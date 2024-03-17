@@ -4,7 +4,7 @@ loadOverrideModelOptions()
 loadOverrideSystemInstructions()
 
 messages.forEach(m => {
-    if(m.role === "user") displayChatMessage("user", m.content)
+    if(m.role === "user") displayChatMessage("user", m.content, m.hasAttachment)
     if(m.role === "assistant") displayChatMessage("bot", m.content)
 })
 
@@ -32,20 +32,26 @@ fetch(`/api/models`)
 
 
 async function sendMessage() {
-    const message = document.getElementById("textbox").value
+    const message = document.getElementById("textbox").value.trim()
+    if(!message) return;
     document.getElementById("textbox").value = ""
+    hideAttachmentUpload()
+    const attachment = await getAttachmentString()
+    clearAttachments()
 
     expandTextbox()
 
-    displayChatMessage("user", message)
+    displayChatMessage("user", message, !!attachment)
     messages.push({
         role: "user",
-        content: message
+        content: message,
+        attachments: attachment ? [attachment] : undefined,
+        hasAttachment: !!attachment
     })
-    displayLoadigMessage()
+    displayLoadingMessage()
     const response = await requestChatCompletion()
     if(response.error) {
-        displayChatMessage("bot", response.message || response.error, true)
+        displayChatMessage("bot", response.message || response.error, false, true)
         return;
     }
     displayChatMessage("bot", response.result)
@@ -77,7 +83,7 @@ async function requestChatCompletion() {
     }).then(res => res.json())
 }
 
-function displayChatMessage(role, content, error) {
+function displayChatMessage(role, content, hasAttachment, error) {
     document.querySelector(".message.loading")?.remove()
     if(role !== "user" && role !== "bot") return ""
     const message = `<div class="message">
@@ -89,6 +95,7 @@ function displayChatMessage(role, content, error) {
                 ${role === "bot" ? "ChatBot" : "You"}
             </span>
             <div${error ? " style=\"color: var(--red);\"" : ""}>
+                ${hasAttachment ? "<strong>[Attachment]</strong><br>" : ""}
                 ${htmlEntities(content)}
             </div>
         </div>
@@ -97,7 +104,7 @@ function displayChatMessage(role, content, error) {
     document.getElementById("messages").innerHTML = message + document.getElementById("messages").innerHTML
 }
 
-function displayLoadigMessage() {
+function displayLoadingMessage() {
     const message = `<div class="message loading">
         <div class="pfp">
             <img src="/assets/images/bot_pfp.jpg">

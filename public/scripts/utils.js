@@ -42,3 +42,86 @@ function resetSaved() {
     alert("Reset the changes")
     location.reload()
 }
+
+function hideSidebar() {
+    document.querySelector(".sidebar-left").classList.toggle("hidden")
+}
+
+function exportChat() {
+    downloadFile(JSON.stringify(messages, null, 2), "chat.json");
+}
+
+function downloadFile(content, filename) {
+    const link = document.createElement("a");
+    const file = new Blob([content], { type: 'text/plan' });
+    link.href = URL.createObjectURL(file);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    link.remove();
+};
+
+function displayAttachmentUpload() {
+    document.getElementById("fileupload").classList.remove("hidden")
+}
+
+function toggleAttachmentUpload() {
+    document.getElementById("fileupload").classList.toggle("hidden")
+}
+
+function hideAttachmentUpload() {
+    document.getElementById("fileupload").classList.add("hidden")
+}
+
+async function getAttachmentString() {
+    const file = document.getElementById("fileattachment")?.files[0];
+    if(!file) return null;
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+
+    return new Promise((resolve) => {
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file (jpg, jpeg, png, gif).');
+            resolve(null);
+        } else if (file.size > maxSize) {
+            alert('File size exceeds 10MB limit. Please select a smaller file.');
+            resolve(null);
+        } else {
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                resolve(event.target.result);
+            };
+
+            reader.readAsDataURL(file);
+        }
+    })
+}
+
+async function previewAttachment() {
+    const attachment = await getAttachmentString()
+    if(!attachment) {
+        document.getElementById("attachmentpreview").removeAttribute("src")
+        document.getElementById("attachmentpreview").setAttribute("style", "display:none;")
+        return;
+    }
+    document.getElementById("attachmentpreview").src = attachment
+    document.getElementById("attachmentpreview").removeAttribute("style")
+}
+
+function pasteOnTextbox(event) {
+    const dT = event.clipboardData || window.clipboardData;
+    const file = dT.files[ 0 ];
+    if(file) {
+        displayAttachmentUpload()
+        const fileList = new DataTransfer();
+        fileList.items.add(file);
+        document.getElementById("fileattachment").files = fileList.files
+        previewAttachment()
+    }
+}
+
+function clearAttachments() {
+    document.getElementById("fileattachment").value = null
+    document.getElementById("attachmentpreview").removeAttribute("src")
+    document.getElementById("attachmentpreview").setAttribute("style", "display:none;")
+}

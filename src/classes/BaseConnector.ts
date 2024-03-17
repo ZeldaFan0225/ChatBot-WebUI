@@ -12,5 +12,6 @@ export interface BaseChatMessage {
     content: string;
     role: string;
     name?: string;
-    attachmentsUrls?: string[];
+    // array of data strings
+    attachments?: string[];
 }
