@@ -16,9 +16,9 @@ if (existsSync(`${process.cwd()}/.env`)) {
 		/[\r\n]|\r\n/
 	)) {
 		let [, key, value] = line.match(RE_INI_KEY_VAL) || [];
-		if (!key) continue;
+		if (!key || !value) continue;
 
-		process.env[key] = value?.trim() || "true";
+		process.env[key] = value?.trim();
 	}
 }
 
@@ -64,19 +64,34 @@ async function startWebServer() {
     await app.register(cookie)
 
     app.get("/login", async (req, rep) => {
-        if(!req.headers.authorization) return rep.code(401).header("www-authenticate", "Basic").send({error: "Unauthorized"})
-        const [username, password] = Buffer.from((req.headers.authorization || "").replace("Basic ", ""), "base64").toString("utf8").split(":")
+        console.log(process.env["LOGIN_USERNAME"],
+        process.env["LOGIN_PASSWORD"])
         if(
-            username !== process.env["LOGIN_USERNAME"] ||
-            password !== process.env["LOGIN_PASSWORD"]
-        ) return rep.code(401).header("www-authenticate", "Basic").send({error: "Unauthorized"})
-        const token = randomBytes(32).toString("hex")
-        authenticated.add(token)
-        return rep.cookie("S_TOKEN", token).redirect("/")
+            process.env["LOGIN_USERNAME"] &&
+            process.env["LOGIN_PASSWORD"]
+        ) {
+            if(!req.headers.authorization) return rep.code(401).header("www-authenticate", "Basic").send({error: "Unauthorized"})
+            const [username, password] = Buffer.from((req.headers.authorization || "").replace("Basic ", ""), "base64").toString("utf8").split(":")
+            if(
+                username !== process.env["LOGIN_USERNAME"] ||
+                password !== process.env["LOGIN_PASSWORD"]
+            ) return rep.code(401).header("www-authenticate", "Basic").send({error: "Unauthorized"})
+            const token = randomBytes(32).toString("hex")
+            authenticated.add(token)
+
+            return rep.cookie("S_TOKEN", token).redirect("/")
+        } else {
+            return rep.redirect("/")
+        }
     })
 
     app.get("/", async (req, rep) => {
-        if(!req.cookies["S_TOKEN"] || !authenticated.has(req.cookies["S_TOKEN"])) return rep.redirect("/login")
+        if(
+            process.env["LOGIN_USERNAME"] &&
+            process.env["LOGIN_PASSWORD"]
+        ) {
+            if(!req.cookies["S_TOKEN"] || !authenticated.has(req.cookies["S_TOKEN"])) return rep.redirect("/login")
+        }
         return rep.sendFile("views/chat.html")
     })
 
