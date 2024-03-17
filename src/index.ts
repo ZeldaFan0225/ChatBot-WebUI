@@ -1,5 +1,5 @@
 import { readFileSync, existsSync } from "fs";
-import fastify from "fastify";
+import fastify, { FastifyRequest } from "fastify";
 import rate_limit from "@fastify/rate-limit"
 import cors from "@fastify/cors"
 import fastify_static from "@fastify/static"
@@ -39,6 +39,8 @@ Object.entries(config.modelConfigurations).forEach(([name, data]) => {
 
 console.log(`Loaded models: ${Object.keys(models).join(", ")}`)
 
+const authenticated = new Set()
+
 startWebServer()
 async function startWebServer() {
 	const app = fastify({
@@ -58,8 +60,6 @@ async function startWebServer() {
     await app.register(fastify_static, {
         root: join(__dirname, '../public')
     });
-
-    const authenticated = new Set()
     
     await app.register(cookie)
 
@@ -86,16 +86,12 @@ async function startWebServer() {
     })
 
     app.get("/", async (req, rep) => {
-        if(
-            process.env["LOGIN_USERNAME"] &&
-            process.env["LOGIN_PASSWORD"]
-        ) {
-            if(!req.cookies["S_TOKEN"] || !authenticated.has(req.cookies["S_TOKEN"])) return rep.redirect("/login")
-        }
+        if(!checkIfAuthorized(req)) return rep.redirect("/login")
         return rep.sendFile("views/chat.html")
     })
 
-    app.get("/api/models", async (_, rep) => {
+    app.get("/api/models", async (req, rep) => {
+        if(!checkIfAuthorized(req)) return rep.code(401).send({error: "Unauthorized"})
         const data: Record<string, any> = {}
         Object.entries(models).forEach(([name, model]) => {
             data[name] = {
@@ -110,6 +106,7 @@ async function startWebServer() {
     app.post("/api/completion", {
         bodyLimit: 1024 * 1024 * 10
     }, async (req, rep) => {
+        if(!checkIfAuthorized(req)) return rep.code(401).send({error: "Unauthorized"})
         const body = req.body as ChatCompletionRequest
         if(!body.model) return rep.code(400).send({error: "No model specified"})
         if(!body.messages) return rep.code(400).send({error: "No messages specified"})
@@ -126,4 +123,15 @@ async function startWebServer() {
     app.listen({port: Number(process.env["DASHBOARD_PORT"] || 3000), host: process.env["MODE"] === "dev" ? "localhost" : "0.0.0.0"}, (_err, address) => {
         console.log(`${app.printRoutes()}\n\nOnline at: ${address}`)
     })
+}
+
+function checkIfAuthorized(request: FastifyRequest) {
+    if(
+        process.env["LOGIN_USERNAME"] &&
+        process.env["LOGIN_PASSWORD"]
+    ) {
+        if(!request.cookies["S_TOKEN"] || !authenticated.has(request.cookies["S_TOKEN"])) return false
+    }
+
+    return true
 }
