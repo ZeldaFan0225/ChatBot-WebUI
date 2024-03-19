@@ -18,7 +18,7 @@ fetch(`/api/models`)
 
         return `<div class="model ${!i ? "selected" : ""}" onclick="selectModel(this, event)" model="${name}">
             <div>
-                <span>${name}</span>
+                <span>${data.displayName || name}</span>
                 <img src="/assets/images/more.png" onclick="displayModelDetails(this)">
             </div>
             <span>${Object.keys({...data.generationOptions, ...overrideModelOptions[name]}).length} Parameters</span>
@@ -140,7 +140,7 @@ function displayModelDetails(element) {
 
     loadedModalModel = model;
 
-    document.getElementById("model-name").innerText = model
+    document.getElementById("model-name").innerText = element.previousElementSibling.innerText || model
     document.getElementById("model-parameters").firstElementChild.innerText = JSON.stringify(modeldata, null, 2)
     document.getElementById("model-systeminstruct").value = overrideSystemInstructions[model] || systemInstructions[model]
 }
@@ -164,6 +164,11 @@ function hideModal() {
     loadedModalModel = undefined;
 
     document.getElementById("model-modal").style.display = "none"
+}
+
+function handleModalSomewhereElseClick(event) {
+    const path = event.composedPath()
+    if(path?.[0]?.id === "model-modal") hideModal()
 }
 
 function resetModalModelOverrides() {

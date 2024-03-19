@@ -33,7 +33,9 @@ Object.entries(config.modelConfigurations).forEach(([name, data]) => {
     if(!/^[a-zA-Z0-9_-]+$/.test(name)) throw new Error("Name has to follow the regex: /^[a-zA-Z0-9_-]+$/")
 
     const connectorClass = require(join(__dirname, connectorPath + ".js"))
-    models[name] = new connectorClass.default(data.connectorOptions)
+    const connector = new connectorClass.default(data.connectorOptions)
+    connector.displayName = data.displayName
+    models[name] = connector
     systemInstructions[name] = data.systemInstruction
 })
 
@@ -95,6 +97,7 @@ async function startWebServer() {
         const data: Record<string, any> = {}
         Object.entries(models).forEach(([name, model]) => {
             data[name] = {
+                displayName: model.displayName,
                 generationOptions: model.generationOptions,
                 systemInstruction: systemInstructions[name]
             }

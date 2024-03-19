@@ -21,6 +21,10 @@ export default class OpenAiCompatibleConnector extends BaseConnector {
             .map(m => this.convertToOpenAiMessage(m))
             .filter(m => m !== null) as OpenAiChatMessage[];
 
+        const validated = await this.passesModeration(openAiMessages)
+
+        if(!validated) throw new Error("Message did not pass moderation")
+
         const response = await this.sendRequest({
             ...this.#generationOptions,
             ...overrideOptions,
@@ -51,6 +55,31 @@ export default class OpenAiCompatibleConnector extends BaseConnector {
         return response as OpenAiCompatibleResponse;
     }
 
+    private async passesModeration(messages: OpenAiChatMessage[]): Promise<boolean> {
+        const latestMessage = messages.at(-1)
+        if(latestMessage?.role !== "user") return true;
+
+        if(!this.#requestUrl.startsWith("https://api.openai.com/")) return true;
+
+        const content = typeof latestMessage.content === "string" ? 
+            latestMessage.content :
+            latestMessage.content.filter(c => c.type === "text").map(c => (c as any).text).join(" ");
+            
+        const openai_req = await fetch(`https://api.openai.com/v1/moderations`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env[this.#apiKey]}`
+            },
+            body: JSON.stringify({
+                input: content
+            })
+        })
+
+        const data: OpenAIModerationResponse = await openai_req.json()
+        return !data?.results?.[0]?.flagged
+    }
+
     private convertToOpenAiMessage(message: BaseChatMessage): OpenAiChatMessage | null {
         if(message.role !== "user" && message.role !== "assistant" && message.role !== "system") return null;
 
@@ -73,6 +102,16 @@ export default class OpenAiCompatibleConnector extends BaseConnector {
         }
         return openAiMessage;
     }
+}
+
+interface OpenAIModerationResponse {
+    id: string,
+    model: string,
+    results: {
+        categories: Record<string, boolean>,
+        category_scores: Record<string, boolean>,
+        flagged: boolean
+    }[]
 }
 
 export interface OpenAiCompatibleConnectorInitOptions extends BaseConnectorInitOptions {

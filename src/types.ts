@@ -10,6 +10,7 @@ export interface Config {
 
 export interface ModelConfiguration {
     connector: string;
+    displayName?: string;
     systemInstruction: string;
     connectorOptions: Record<string, any>;
 }
