@@ -31,10 +31,20 @@ function markdownToHtml(markdown) {
     return text.replace(inlineCodeRegex, (match, code) => `<code>${code}</code>`);
 }
 
-function expandActions(element) {
-    element.classList.toggle("expanded")
+function expandActions() {
+    document.getElementById("action-expander").classList.toggle("expanded")
     document.getElementById("actions").classList.toggle("expanded")
 }
+
+function collapseActions() {
+    document.getElementById("action-expander").classList.remove("expanded")
+    document.getElementById("actions").classList.remove("expanded")
+}
+
+window.addEventListener("click", event => {
+    const path = event.composedPath()
+    if(!path.some(e => e.id === "action-expander")) collapseActions()
+})
 
 function resetSaved() {
     if(!confirm("Do you want to reset the custom change you made?")) return;
