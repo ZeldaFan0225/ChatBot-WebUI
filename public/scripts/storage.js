@@ -1,39 +1,41 @@
-let selectedModel;
-let modelOptions = {}
-let overrideModelOptions = {};
-let systemInstructions = {};
-let overrideSystemInstructions = {};
-let messages = []
+class Storage {
+    static selectedModel;
+    static modelOptions = {};
+    static overrideModelOptions = {};
+    static systemInstructions = {};
+    static overrideSystemInstructions = {};
+    static messages = [];
 
-function saveOverrideModelOptions() {
-    localStorage.setItem('overrideModelOptions', JSON.stringify(overrideModelOptions));
-}
+    static saveOverrideModelOptions() {
+        localStorage.setItem('overrideModelOptions', JSON.stringify(Storage.overrideModelOptions));
+    }
 
-function loadOverrideModelOptions() {
-    overrideModelOptions = JSON.parse(localStorage.getItem('overrideModelOptions')) || {};
-}
+    static loadOverrideModelOptions() {
+        Storage.overrideModelOptions = JSON.parse(localStorage.getItem('overrideModelOptions')) || {};
+    }
 
-function saveOverrideSystemInstructions() {
-    localStorage.setItem('overrideSystemInstructions', JSON.stringify(overrideSystemInstructions));
-}
+    static saveOverrideSystemInstructions() {
+        localStorage.setItem('overrideSystemInstructions', JSON.stringify(Storage.overrideSystemInstructions));
+    }
 
-function loadOverrideSystemInstructions() {
-    overrideSystemInstructions = JSON.parse(localStorage.getItem('overrideSystemInstructions')) || {};
-}
+    static loadOverrideSystemInstructions() {
+        Storage.overrideSystemInstructions = JSON.parse(localStorage.getItem('overrideSystemInstructions')) || {};
+    }
 
-function setSelectedModel(model) {
-    localStorage.setItem('selectedModel', model);
-    selectedModel = model;
-}
+    static setSelectedModel(model) {
+        localStorage.setItem('selectedModel', model);
+        Storage.selectedModel = model;
+    }
 
-function loadSelectedModel() {
-    selectedModel = localStorage.getItem('selectedModel');
-}
+    static loadSelectedModel() {
+        Storage.selectedModel = localStorage.getItem('selectedModel');
+    }
 
-function saveMessages() {
-    localStorage.setItem('messages', JSON.stringify(messages.map(m => ({...m, attachments: undefined, hasAttachment: m.attachments?.length > 0}))));
-}
+    static saveMessages() {
+        localStorage.setItem('messages', JSON.stringify(Storage.messages.map(m => ({...m, attachments: undefined, hasAttachment: m.attachments?.length > 0}))));
+    }
 
-function loadMessages() {
-    messages = JSON.parse(localStorage.getItem('messages')) || [];
+    static loadMessages() {
+        Storage.messages = JSON.parse(localStorage.getItem('messages')) || [];
+    }
 }

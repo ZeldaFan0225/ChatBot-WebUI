@@ -12,18 +12,18 @@
     </head>
     <body>
         <div class="main">
-            <div id="model-modal" style="display:none;" onclick="handleModalSomewhereElseClick(event)">
+            <div id="model-modal" style="display:none;" onclick="Chat.handleModalSomewhereElseClick(event)">
                 <div>
                     <div class="modal-header">
                         <h1 id="model-name">
                             ChatGPT
                         </h1>
-                        <img onclick="hideModal()" src="/assets/images/x.png">
+                        <img onclick="Chat.hideModal()" src="/assets/images/x.png">
                     </div>
                     <pre id="model-parameters"><code contenteditable="true" spellcheck="false"></code></pre>
                     <input type="text" id="model-systeminstruct">
-                    <button onclick="hideModal()">Save</button>
-                    <button onclick="resetModalModelOverrides()" class="delete">Reset to default</button>
+                    <button onclick="Chat.hideModal()">Save</button>
+                    <button onclick="Chat.resetModalModelOverrides()" class="delete">Reset to default</button>
                 </div>
             </div>
             <div class="sidebar-left">
@@ -34,31 +34,31 @@
             </div>
             <div class="chat-window">
                 <div id="expand-models">
-                    <i class="material-icons" onclick="hideSidebar()">menu</i>
+                    <i class="material-icons" onclick="Utils.hideSidebar()">menu</i>
                 </div>
                 <div class="textbox-area">
-                    <i class="material-icons expand-actions" id="action-expander" onclick="expandActions()">expand_more</i>
+                    <i class="material-icons expand-actions" id="action-expander" onclick="Utils.expandActions()">expand_more</i>
                     <div class="input">
-                        <textarea id="textbox" rows="1" placeholder="Message" onkeyup="textboxInput(event)" oninput="expandTextbox()" onpaste="pasteOnTextbox(event)"></textarea>
-                        <i onclick="sendMessage()" class="material-icons">send</i>
+                        <textarea id="textbox" rows="1" placeholder="Message" onkeyup="Utils.textboxInput(event)" oninput="Chat.expandTextbox()" onpaste="Utils.pasteOnTextbox(event)"></textarea>
+                        <i onclick="Chat.sendMessage()" class="material-icons">send</i>
                     </div>
                 </div>
                 <div id="actions">
-                    <div class="action" onclick="resetChat()">
+                    <div class="action" onclick="Utils.resetChat()">
                         <i class="material-icons">delete</i>
                         <span>Delete Chat</span>
                     </div>
-                    <div class="action" onclick="toggleAttachmentUpload()">
+                    <div class="action" onclick="Utils.toggleAttachmentUpload()">
                         <i class="material-icons">image</i>
                         <span>Attach Image</span>
                     </div>
-                    <div class="action" onclick="exportChat()">
+                    <div class="action" onclick="Utils.exportChat()">
                         <i class="material-icons">file_upload</i>
                         <span>Export Chat (JSON)</span>
                     </div>
                 </div>
                 <div id="fileupload" class="hidden">
-                    <input type="file" id="fileattachment" accept="image/*" onchange="previewAttachment()">
+                    <input type="file" id="fileattachment" accept="image/*" onchange="Utils.previewAttachment()">
                     <img id="attachmentpreview" style="display:none;">
                 </div>
                 <div id="messages"></div>
